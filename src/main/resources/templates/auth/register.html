@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BBMS — Register</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--navy); padding:20px; }
+    .reg-card { background:white; border-radius:20px; box-shadow:var(--shadow-lg); width:100%; max-width:560px; overflow:hidden; }
+    .reg-header { background:linear-gradient(135deg, var(--navy), var(--navy-lt)); padding:32px 40px; }
+    .reg-header h2 { font-family:'Playfair Display',serif; color:white; font-size:1.6rem; }
+    .reg-header p  { color:rgba(255,255,255,.6); font-size:0.85rem; margin-top:6px; }
+    .reg-body { padding:36px 40px; }
+    .role-toggle { display:flex; gap:12px; margin-bottom:28px; }
+    .role-btn { flex:1; padding:14px; border:2px solid var(--border); border-radius:10px; cursor:pointer; text-align:center; transition:var(--transition); background:white; }
+    .role-btn.active { border-color:var(--crimson); background:var(--crimson-lt); }
+    .role-btn .icon { font-size:1.5rem; display:block; margin-bottom:6px; }
+    .role-btn .label { font-size:0.85rem; font-weight:600; color:var(--navy); }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .login-link { text-align:center; margin-top:20px; font-size:0.88rem; color:var(--slate); }
+    .login-link a { color:var(--crimson); font-weight:600; text-decoration:none; }
+  </style>
+</head>
+<body>
+<div class="reg-card">
+  <div class="reg-header">
+    <h2>🩸 Create Account</h2>
+    <p>Register as a Donor or Recipient. Your account will be reviewed by the System Maintainer.</p>
+  </div>
+  <div class="reg-body">
+    <div th:if="${error}"   class="alert alert-error"><span>⚠️</span><span th:text="${error}"></span></div>
+    <div th:if="${success}" class="alert alert-success"><span>✅</span><span th:text="${success}"></span></div>
+
+    <form method="post" th:action="@{/register}" id="regForm">
+      <!-- Role toggle -->
+      <div class="form-group">
+        <label class="form-label">I am a…</label>
+        <div class="role-toggle">
+          <div class="role-btn active" id="donorBtn" onclick="setRole('DONOR')">
+            <span class="icon">🩸</span>
+            <span class="label">Donor</span>
+          </div>
+          <div class="role-btn" id="recipientBtn" onclick="setRole('RECIPIENT')">
+            <span class="icon">🏥</span>
+            <span class="label">Recipient</span>
+          </div>
+        </div>
+        <input type="hidden" name="role" id="roleInput" value="DONOR">
+      </div>
+
+      <div class="two-col">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" name="name" class="form-control" placeholder="Your full name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Age</label>
+          <input type="number" name="age" class="form-control" placeholder="18–65" min="18" max="65" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">National ID (NID)</label>
+        <input type="text" name="nid" class="form-control" placeholder="Unique national ID number" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Blood Group</label>
+        <select name="bloodGroup" class="form-control" required>
+          <option value="">— Select blood group —</option>
+          <option th:each="bg : ${bloodGroups}" th:value="${bg}" th:text="${bg}"></option>
+        </select>
+      </div>
+
+      <div class="two-col">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" placeholder="Choose username" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" placeholder="Min 6 characters" minlength="6" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;">
+        Register Account →
+      </button>
+    </form>
+
+    <p class="login-link">Already have an account? <a th:href="@{/login}">Sign in</a></p>
+  </div>
+</div>
+<script>
+  function setRole(role) {
+    document.getElementById('roleInput').value = role;
+    document.getElementById('donorBtn').classList.toggle('active', role === 'DONOR');
+    document.getElementById('recipientBtn').classList.toggle('active', role === 'RECIPIENT');
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BBMS — Login</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--navy); padding: 20px; }
+    .auth-wrap { display: flex; width: 100%; max-width: 960px; min-height: 560px; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-lg); }
+    .auth-left {
+      flex: 1;
+      background: linear-gradient(145deg, var(--crimson-dk) 0%, var(--crimson) 60%, #E8304A 100%);
+      padding: 52px 44px;
+      display: flex; flex-direction: column; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .auth-left::before {
+      content: '🩸';
+      position: absolute; right: -20px; bottom: -20px;
+      font-size: 200px; opacity: .08; transform: rotate(-15deg);
+    }
+    .auth-left h2 { font-family: 'Playfair Display', serif; color: white; font-size: 2rem; line-height: 1.3; margin-bottom: 16px; }
+    .auth-left p  { color: rgba(255,255,255,.75); font-size: 0.95rem; line-height: 1.7; margin-bottom: 28px; }
+    .auth-left .tagline { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,.9); font-size: 0.85rem; }
+    .auth-left .tagline span { background: rgba(255,255,255,.15); border-radius: 6px; padding: 5px 12px; }
+    .auth-right { width: 400px; background: white; padding: 52px 44px; display: flex; flex-direction: column; justify-content: center; }
+    .auth-right .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 36px; }
+    .auth-right .logo .dot { width: 36px; height: 36px; background: var(--crimson); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+    .auth-right .logo span { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--navy); }
+    .auth-right h3 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--navy); margin-bottom: 6px; }
+    .auth-right .sub { color: var(--slate); font-size: 0.88rem; margin-bottom: 32px; }
+    .auth-right .register-link { text-align: center; margin-top: 24px; font-size: 0.88rem; color: var(--slate); }
+    .auth-right .register-link a { color: var(--crimson); font-weight: 600; text-decoration: none; }
+    .auth-right .register-link a:hover { text-decoration: underline; }
+    @media(max-width:700px){ .auth-left{display:none;} .auth-right{width:100%;} }
+  </style>
+</head>
+<body>
+<div class="auth-wrap">
+  <!-- Left panel -->
+  <div class="auth-left">
+    <h2>Blood Bank Management System</h2>
+    <p>A centralized platform connecting donors, recipients, and medical staff to ensure timely and safe blood availability.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="tagline">🔴 <span>Real-time inventory tracking</span></div>
+      <div class="tagline">🔒 <span>Role-based secure access</span></div>
+      <div class="tagline">⚡ <span>Emergency-ready system</span></div>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="auth-right">
+    <div class="logo">
+      <div class="dot">🩸</div>
+      <span>BBMS</span>
+    </div>
+    <h3>Welcome back</h3>
+    <p class="sub">Sign in to your account to continue</p>
+
+    <div th:if="${error}" class="alert alert-error">
+      <span>⚠️</span>
+      <span th:text="${error}">Invalid credentials</span>
+    </div>
+    <div th:if="${success}" class="alert alert-success">
+      <span>✅</span>
+      <span th:text="${success}">Success</span>
+    </div>
+
+    <form method="post" th:action="@{/login}">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-control" placeholder="Enter your username" required autofocus>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;">
+        Sign In →
+      </button>
+    </form>
+
+    <p class="register-link">
+      New donor or patient? <a th:href="@{/register}">Create an account</a>
+    </p>
+
+    <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);font-size:0.75rem;color:#A0AEC0;">
+      <strong>Staff accounts:</strong> admin / maintainer / hematology<br>
+      <em>Default password: password123</em>
+    </div>
+  </div>
+</div>
+</body>
+</html>
