@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — Select Donors</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: admin-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar"><span class="topbar-title">Select Suitable Donors</span></div>
+    <div class="page-body">
+      <div th:replace="~{fragments :: alerts}"></div>
+
+      <!-- Filter form -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header"><h3><span class="page-accent"></span>Find Donors by Blood Group</h3></div>
+        <div class="card-body">
+          <form method="get" th:action="@{/admin/donors}" style="display:flex;gap:12px;align-items:flex-end;">
+            <div class="form-group" style="flex:1;margin-bottom:0;">
+              <label class="form-label">Blood Group</label>
+              <select name="bloodGroup" class="form-control">
+                <option value="">— All Blood Groups —</option>
+                <option th:each="bg : ${bloodGroups}" th:value="${bg}" th:text="${bg}"
+                        th:selected="${bg == selectedGroup}"></option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="card" th:if="${donors != null}">
+        <div class="card-header">
+          <h3><span class="page-accent"></span>Available Donors — <span th:text="${selectedGroup}"></span></h3>
+          <span class="badge badge-info" th:text="${donors.size()} + ' found'"></span>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${donors.empty}" class="empty-state">
+            <div class="icon">🩸</div>
+            <p>No suitable donors found for blood group <strong th:text="${selectedGroup}"></strong>.</p>
+          </div>
+          <div th:unless="${donors.empty}" class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Name</th><th>Age</th><th>Blood Group</th><th>Donation Date</th><th>Medical Status</th><th>Donation Status</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="d : ${donors}">
+                  <td th:text="${d.name}">—</td>
+                  <td th:text="${d.age}">—</td>
+                  <td><span class="blood-group-badge" th:text="${d.bloodGroup}"></span></td>
+                  <td th:text="${d.donationDate != null ? d.donationDate : 'Not scheduled'}">—</td>
+                  <td>
+                    <span class="badge" th:classappend="${d.medicallyApproved} ? 'badge-approved' : 'badge-pending'"
+                          th:text="${d.medicallyApproved ? 'Cleared' : 'Pending'}"></span>
+                  </td>
+                  <td>
+                    <span class="badge badge-navy"
+                          th:text="${#strings.capitalize(d.donationStatus.name().replace('_',' ').toLowerCase())}"></span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

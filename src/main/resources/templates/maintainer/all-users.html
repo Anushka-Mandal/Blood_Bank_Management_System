@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — All Users</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: maintainer-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar"><span class="topbar-title">All Users</span></div>
+    <div class="page-body">
+      <div th:replace="~{fragments :: alerts}"></div>
+
+      <div class="card">
+        <div class="card-header"><h3><span class="page-accent"></span>All Registered Users</h3></div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${allUsers.empty}" class="empty-state">
+            <div class="icon">👥</div><p>No users found.</p>
+          </div>
+          <div th:unless="${allUsers.empty}" class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Name</th><th>Role</th><th>Blood Group</th><th>Username</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="user : ${allUsers}">
+                  <td th:text="${user.name}"></td>
+                  <td><span class="badge badge-navy" th:text="${user.role}"></span></td>
+                  <td><span class="blood-group-badge" th:text="${user.bloodGroup}"></span></td>
+                  <td th:text="${user.username}"></td>
+                  <td>
+                    <span class="badge"
+                          th:classappend="${user.accountStatus.name() == 'APPROVED'} ? 'badge-approved' : (${user.accountStatus.name() == 'REJECTED'} ? 'badge-rejected' : 'badge-pending')"
+                          th:text="${user.accountStatus}"></span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

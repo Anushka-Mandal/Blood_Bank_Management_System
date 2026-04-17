@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — Manage Requests</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: admin-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar"><span class="topbar-title">Blood Request Management</span></div>
+    <div class="page-body">
+      <div th:replace="~{fragments :: alerts}"></div>
+
+      <!-- Forwarded — needs Admin action -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <h3><span class="page-accent"></span>Forwarded — Awaiting Approval</h3>
+          <span class="badge badge-pending" th:text="${forwardedRequests.size()} + ' pending'"></span>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${forwardedRequests.empty}" class="empty-state">
+            <div class="icon">✅</div><p>No requests awaiting approval.</p>
+          </div>
+          <div th:unless="${forwardedRequests.empty}" class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Recipient</th><th>Blood Group</th><th>Qty</th><th>Required By</th><th>Urgency</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="req : ${forwardedRequests}">
+                  <td><span class="badge badge-navy" th:text="'#' + ${req.requestId}"></span></td>
+                  <td th:text="${req.recipient.name}">—</td>
+                  <td><span class="blood-group-badge" th:text="${req.bloodGroup}"></span></td>
+                  <td th:text="${req.quantity} + ' units'"></td>
+                  <td th:text="${req.requiredDate}">—</td>
+                  <td>
+                    <span class="badge"
+                          th:classappend="${req.urgency == 'CRITICAL'} ? 'badge-critical' : (${req.urgency == 'URGENT'} ? 'badge-urgent' : 'badge-navy')"
+                          th:text="${req.urgency}"></span>
+                  </td>
+                  <td style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <form method="post" th:action="@{/admin/requests/{id}/approve(id=${req.requestId})}">
+                      <input type="hidden" name="notes" value="Approved by administrator.">
+                      <button class="btn btn-safe btn-sm">✅ Approve</button>
+                    </form>
+                    <form method="post" th:action="@{/admin/requests/{id}/reject(id=${req.requestId})}">
+                      <input type="hidden" name="reason" value="Insufficient blood stock.">
+                      <button class="btn btn-danger btn-sm">❌ Reject</button>
+                    </form>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Approved — needs blood allocation -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <h3><span class="page-accent"></span>Approved — Awaiting Blood Allocation</h3>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${approvedRequests.empty}" class="empty-state">
+            <div class="icon">📦</div><p>No approved requests awaiting allocation.</p>
+          </div>
+          <div th:unless="${approvedRequests.empty}" class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Recipient</th><th>Blood Group</th><th>Qty</th><th>Status</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="req : ${approvedRequests}">
+                  <td><span class="badge badge-navy" th:text="'#' + ${req.requestId}"></span></td>
+                  <td th:text="${req.recipient.name}">—</td>
+                  <td><span class="blood-group-badge" th:text="${req.bloodGroup}"></span></td>
+                  <td th:text="${req.quantity} + ' units'"></td>
+                  <td><span class="badge badge-approved" th:text="${req.status}"></span></td>
+                  <td>
+                    <a th:href="@{/admin/allocate/{id}(id=${req.requestId})}" class="btn btn-primary btn-sm">🩸 Allocate Blood</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- All requests history -->
+      <div class="card">
+        <div class="card-header"><h3><span class="page-accent"></span>All Requests History</h3></div>
+        <div class="card-body" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Recipient</th><th>Blood Group</th><th>Qty</th><th>Date</th><th>Status</th><th>Notes</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="req : ${allRequests}">
+                  <td><span class="badge badge-navy" th:text="'#' + ${req.requestId}"></span></td>
+                  <td th:text="${req.recipient.name}">—</td>
+                  <td><span class="blood-group-badge" th:text="${req.bloodGroup}"></span></td>
+                  <td th:text="${req.quantity} + ' units'"></td>
+                  <td th:text="${req.requiredDate}">—</td>
+                  <td>
+                    <span class="badge"
+                          th:classappend="${req.status.name() == 'FULFILLED'} ? 'badge-approved' : (${req.status.name() == 'REJECTED'} ? 'badge-rejected' : 'badge-pending')"
+                          th:text="${req.status}"></span>
+                  </td>
+                  <td style="max-width:200px;font-size:0.8rem;color:var(--slate);" th:text="${req.adminNotes}">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — Allocate Blood</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: admin-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar"><span class="topbar-title">Allocate Blood to Request</span></div>
+    <div class="page-body">
+      <div th:replace="~{fragments :: alerts}"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:24px;align-items:start;">
+
+        <!-- Request Details -->
+        <div>
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header"><h3><span class="page-accent"></span>Request Details</h3></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <div>
+                  <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--slate);">Request ID</p>
+                  <p style="font-weight:600;margin-top:3px;" th:text="'#' + ${request.requestId}"></p>
+                </div>
+                <div>
+                  <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--slate);">Recipient</p>
+                  <p style="font-weight:600;margin-top:3px;" th:text="${request.recipient.name}"></p>
+                </div>
+                <div>
+                  <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--slate);">Blood Group Needed</p>
+                  <p style="margin-top:3px;"><span class="blood-group-badge" style="font-size:1.1rem;" th:text="${request.bloodGroup}"></span></p>
+                </div>
+                <div>
+                  <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--slate);">Quantity Requested</p>
+                  <p style="font-weight:600;margin-top:3px;" th:text="${request.quantity} + ' units'"></p>
+                </div>
+                <div>
+                  <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--slate);">Required By</p>
+                  <p style="font-weight:600;margin-top:3px;" th:text="${request.requiredDate}"></p>
+                </div>
+                <div>
+                  <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--slate);">Urgency</p>
+                  <span class="badge"
+                        th:classappend="${request.urgency == 'CRITICAL'} ? 'badge-critical' : (${request.urgency == 'URGENT'} ? 'badge-urgent' : 'badge-navy')"
+                        th:text="${request.urgency}"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Suitable Donors (use case: Select Suitable Donors) -->
+          <div class="card">
+            <div class="card-header"><h3><span class="page-accent"></span>Suitable Donors</h3></div>
+            <div class="card-body" style="padding:0;">
+              <div th:if="${suitableDonors.empty}" class="empty-state" style="padding:24px;">
+                <div class="icon">🩸</div><p>No available donors for this blood group.</p>
+              </div>
+              <div th:unless="${suitableDonors.empty}" class="table-wrap">
+                <table>
+                  <thead><tr><th>Name</th><th>Date</th></tr></thead>
+                  <tbody>
+                    <tr th:each="d : ${suitableDonors}">
+                      <td th:text="${d.name}">—</td>
+                      <td th:text="${d.donationDate}">—</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Available Blood Units -->
+        <div class="card">
+          <div class="card-header">
+            <h3><span class="page-accent"></span>Available Blood Units — <span th:text="${request.bloodGroup}"></span></h3>
+            <span class="badge badge-safe" th:text="${availableUnits.size()} + ' units'"></span>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div th:if="${availableUnits.empty}" class="empty-state">
+              <div class="icon">⚠️</div>
+              <p>No available units for blood group <strong th:text="${request.bloodGroup}"></strong>.</p>
+              <p style="margin-top:8px;font-size:0.82rem;">Check if hematology has cleared any units, or contact suitable donors.</p>
+            </div>
+            <div th:unless="${availableUnits.empty}" class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Unit ID</th><th>Blood Group</th><th>Donor</th><th>Collected</th><th>Expiry</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                  <tr th:each="unit : ${availableUnits}">
+                    <td><span class="badge badge-navy" th:text="'#' + ${unit.bloodId}"></span></td>
+                    <td><span class="blood-group-badge" th:text="${unit.bloodGroup}"></span></td>
+                    <td th:text="${unit.donor != null ? unit.donor.name : 'Unknown'}">—</td>
+                    <td th:text="${#temporals.format(unit.collectedAt,'dd MMM yyyy')}">—</td>
+                    <td>
+                      <span th:text="${unit.expiryDate}"
+                            th:style="${unit.expiryDate.isBefore(T(java.time.LocalDate).now().plusDays(7))} ? 'color:var(--danger);font-weight:600;' : ''">
+                      </span>
+                    </td>
+                    <td>
+                      <form method="post" th:action="@{/admin/allocate/{id}(id=${request.requestId})}">
+                        <input type="hidden" name="bloodUnitId" th:value="${unit.bloodId}">
+                        <button class="btn btn-primary btn-sm">Allocate This Unit</button>
+                      </form>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;">
+        <a th:href="@{/admin/requests}" class="btn btn-outline">← Back to Requests</a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

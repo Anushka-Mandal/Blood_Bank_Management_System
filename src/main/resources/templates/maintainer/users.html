@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — Verify Users</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: maintainer-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar"><span class="topbar-title">User Verification</span></div>
+    <div class="page-body">
+      <div th:replace="~{fragments :: alerts}"></div>
+
+      <!-- User verification with filters -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <h3><span class="page-accent"></span>User Verification</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a th:href="@{/maintainer/users(status='PENDING')}" class="btn btn-sm"
+               th:classappend="${selectedStatus == 'PENDING'} ? 'btn-primary' : 'btn-outline'">Pending</a>
+            <a th:href="@{/maintainer/users(status='APPROVED')}" class="btn btn-sm"
+               th:classappend="${selectedStatus == 'APPROVED'} ? 'btn-primary' : 'btn-outline'">Approved</a>
+            <a th:href="@{/maintainer/users(status='REJECTED')}" class="btn btn-sm"
+               th:classappend="${selectedStatus == 'REJECTED'} ? 'btn-primary' : 'btn-outline'">Rejected</a>
+            <a th:href="@{/maintainer/users(status='ALL')}" class="btn btn-sm"
+               th:classappend="${selectedStatus == 'ALL'} ? 'btn-primary' : 'btn-outline'">All Users</a>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${filteredUsers.empty}" class="empty-state">
+            <div class="icon">✅</div><p>No users found for selected filter.</p>
+          </div>
+          <div th:unless="${filteredUsers.empty}" class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Name</th><th>Age</th><th>Role</th><th>Blood Group</th><th>NID</th><th>Username</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="user : ${filteredUsers}">
+                  <td th:text="${user.name}"></td>
+                  <td th:text="${user.age}"></td>
+                  <td><span class="badge badge-info" th:text="${user.role}"></span></td>
+                  <td><span class="blood-group-badge" th:text="${user.bloodGroup}"></span></td>
+                  <td><code style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;" th:text="${user.nid}"></code></td>
+                  <td th:text="${user.username}"></td>
+                  <td>
+                    <span class="badge"
+                          th:classappend="${user.accountStatus.name() == 'APPROVED'} ? 'badge-approved' : (${user.accountStatus.name() == 'REJECTED'} ? 'badge-rejected' : 'badge-pending')"
+                          th:text="${user.accountStatus}"></span>
+                  </td>
+                  <td>
+                    <div th:if="${user.accountStatus.name() == 'PENDING'}" style="display:flex;gap:8px;">
+                      <form method="post" th:action="@{/maintainer/users/{id}/approve(id=${user.userId})}">
+                        <button class="btn btn-safe btn-sm">✅ Approve</button>
+                      </form>
+                      <form method="post" th:action="@{/maintainer/users/{id}/reject(id=${user.userId})}">
+                        <button class="btn btn-danger btn-sm">❌ Reject</button>
+                      </form>
+                    </div>
+                    <span th:unless="${user.accountStatus.name() == 'PENDING'}" style="color:#64748b;">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>
