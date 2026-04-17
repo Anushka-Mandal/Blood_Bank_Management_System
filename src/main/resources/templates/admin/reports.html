@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — Reports</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: admin-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar"><span class="topbar-title">System Reports</span></div>
+    <div class="page-body">
+
+      <!-- KPI Summary -->
+      <div class="stats-grid" style="margin-bottom:32px;">
+        <div class="stat-card">
+          <div class="stat-icon crimson">👥</div>
+          <div>
+            <div class="stat-value" th:text="${allUsers.size()}">0</div>
+            <div class="stat-label">Total Registered Users</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon safe">✅</div>
+          <div>
+            <div class="stat-value" th:text="${safeUnits}">0</div>
+            <div class="stat-label">Safe Blood Units Available</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon navy">📋</div>
+          <div>
+            <div class="stat-value" th:text="${allRequests.size()}">0</div>
+            <div class="stat-label">Total Blood Requests</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon warn">⏳</div>
+          <div>
+            <div class="stat-value" th:text="${pendingRequests}">0</div>
+            <div class="stat-label">Pending Requests</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Blood Stock Report -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header"><h3><span class="page-accent"></span>Blood Stock Report</h3></div>
+        <div class="card-body" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Blood Group</th><th>Total Units</th><th>Available</th><th>Reserved</th><th>Stock Level</th><th>Last Updated</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="inv : ${inventory}">
+                  <td><span class="blood-group-badge" th:text="${inv.bloodGroup}"></span></td>
+                  <td th:text="${inv.totalUnits}">0</td>
+                  <td th:text="${inv.availableUnits}">0</td>
+                  <td th:text="${inv.reservedUnits}">0</td>
+                  <td>
+                    <span class="badge"
+                          th:classappend="${inv.stockLevel == 'ADEQUATE'} ? 'badge-approved' : (${inv.stockLevel == 'LOW'} ? 'badge-pending' : 'badge-critical')"
+                          th:text="${inv.stockLevel}"></span>
+                  </td>
+                  <td th:text="${inv.lastUpdated != null ? #temporals.format(inv.lastUpdated,'dd MMM yyyy HH:mm') : '—'}">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Request Fulfillment Report -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header"><h3><span class="page-accent"></span>Request Fulfillment Report</h3></div>
+        <div class="card-body" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Recipient</th><th>Blood Group</th><th>Qty</th><th>Submitted</th><th>Status</th><th>Notes</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="req : ${allRequests}">
+                  <td><span class="badge badge-navy" th:text="'#' + ${req.requestId}"></span></td>
+                  <td th:text="${req.recipient.name}">—</td>
+                  <td><span class="blood-group-badge" th:text="${req.bloodGroup}"></span></td>
+                  <td th:text="${req.quantity}">0</td>
+                  <td th:text="${#temporals.format(req.createdAt,'dd MMM yyyy')}">—</td>
+                  <td>
+                    <span class="badge"
+                          th:classappend="${req.status.name() == 'FULFILLED'} ? 'badge-approved' : (${req.status.name() == 'REJECTED'} ? 'badge-rejected' : 'badge-pending')"
+                          th:text="${req.status}"></span>
+                  </td>
+                  <td style="font-size:0.82rem;color:var(--slate);" th:text="${req.adminNotes}">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Blood Units / Donation Report -->
+      <div class="card">
+        <div class="card-header"><h3><span class="page-accent"></span>Donation Records</h3></div>
+        <div class="card-body" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Unit ID</th><th>Blood Group</th><th>Donor</th><th>Collected</th><th>Expiry</th><th>Test Result</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="unit : ${allUnits}">
+                  <td><span class="badge badge-navy" th:text="'#' + ${unit.bloodId}"></span></td>
+                  <td><span class="blood-group-badge" th:text="${unit.bloodGroup}"></span></td>
+                  <td th:text="${unit.donor != null ? unit.donor.name : '—'}">—</td>
+                  <td th:text="${#temporals.format(unit.collectedAt,'dd MMM yyyy')}">—</td>
+                  <td th:text="${unit.expiryDate}">—</td>
+                  <td>
+                    <span class="badge"
+                          th:classappend="${unit.testStatus.name() == 'SAFE'} ? 'badge-safe' : (${unit.testStatus.name() == 'UNSAFE'} ? 'badge-rejected' : 'badge-pending')"
+                          th:text="${unit.testStatus}"></span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

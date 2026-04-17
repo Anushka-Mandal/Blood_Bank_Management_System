@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — Forward Requests</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: maintainer-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar"><span class="topbar-title">Blood Request Management</span></div>
+    <div class="page-body">
+      <div th:replace="~{fragments :: alerts}"></div>
+
+      <!-- Pending Requests -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <h3><span class="page-accent"></span>Pending — Awaiting Forwarding</h3>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${pendingRequests.empty}" class="empty-state">
+            <div class="icon">📋</div><p>No pending requests.</p>
+          </div>
+          <div th:unless="${pendingRequests.empty}" class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Recipient</th><th>Blood Group</th><th>Qty</th><th>Required By</th><th>Urgency</th><th>Submitted</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="req : ${pendingRequests}">
+                  <td><span class="badge badge-navy" th:text="'#' + ${req.requestId}"></span></td>
+                  <td th:text="${req.recipient.name}">—</td>
+                  <td><span class="blood-group-badge" th:text="${req.bloodGroup}"></span></td>
+                  <td th:text="${req.quantity} + ' units'"></td>
+                  <td th:text="${req.requiredDate}"></td>
+                  <td>
+                    <span class="badge"
+                          th:classappend="${req.urgency == 'CRITICAL'} ? 'badge-critical' : (${req.urgency == 'URGENT'} ? 'badge-urgent' : 'badge-navy')"
+                          th:text="${req.urgency}"></span>
+                  </td>
+                  <td th:text="${#temporals.format(req.createdAt,'dd MMM HH:mm')}">—</td>
+                  <td>
+                    <form method="post" th:action="@{/maintainer/requests/{id}/forward(id=${req.requestId})}">
+                      <input type="hidden" name="notes" value="Reviewed and forwarded by System Maintainer.">
+                      <button class="btn btn-primary btn-sm">📤 Forward to Admin</button>
+                    </form>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forwarded Requests -->
+      <div class="card">
+        <div class="card-header">
+          <h3><span class="page-accent"></span>Already Forwarded</h3>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${forwardedRequests.empty}" class="empty-state">
+            <div class="icon">📤</div><p>No forwarded requests yet.</p>
+          </div>
+          <div th:unless="${forwardedRequests.empty}" class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Recipient</th><th>Blood Group</th><th>Qty</th><th>Status</th><th>Notes</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="req : ${forwardedRequests}">
+                  <td><span class="badge badge-navy" th:text="'#' + ${req.requestId}"></span></td>
+                  <td th:text="${req.recipient.name}">—</td>
+                  <td><span class="blood-group-badge" th:text="${req.bloodGroup}"></span></td>
+                  <td th:text="${req.quantity} + ' units'"></td>
+                  <td><span class="badge badge-info" th:text="${req.status}"></span></td>
+                  <td th:text="${req.adminNotes}">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

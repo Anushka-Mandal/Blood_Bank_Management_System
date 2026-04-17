@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — Test Blood</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    .test-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 20px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+    .test-card:hover { box-shadow: var(--shadow-md); }
+    .test-info { display: flex; gap: 28px; flex-wrap: wrap; }
+    .test-info div p:first-child { font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--slate); }
+    .test-info div p:last-child  { font-weight:600;margin-top:3px; }
+    .test-actions { display:flex;flex-direction:column;gap:10px; }
+    .test-form { display:flex;gap:8px;align-items:flex-end; }
+    .test-form input { width:260px; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: hematology-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar"><span class="topbar-title">Blood Testing Queue</span></div>
+    <div class="page-body">
+      <div th:replace="~{fragments :: alerts}"></div>
+
+      <div th:if="${pendingUnits.empty}" class="empty-state" style="padding:80px;">
+        <div class="icon">✅</div>
+        <p style="font-size:1.1rem;font-weight:600;color:var(--navy);margin-bottom:8px;">Testing queue is clear!</p>
+        <p>All blood units have been processed. Check back when new donations arrive.</p>
+        <a th:href="@{/hematology/results}" class="btn btn-outline" style="margin-top:20px;">View All Results</a>
+      </div>
+
+      <div th:unless="${pendingUnits.empty}">
+        <div class="alert alert-info">
+          🔬 <strong th:text="${pendingUnits.size()}"></strong> blood unit(s) require testing.
+          Mark each unit as SAFE or UNSAFE based on laboratory results.
+        </div>
+
+        <div th:each="unit : ${pendingUnits}" class="test-card">
+          <!-- Unit Info -->
+          <div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <span class="badge badge-navy" style="font-size:0.9rem;" th:text="'Unit #' + ${unit.bloodId}"></span>
+              <span class="blood-group-badge" th:text="${unit.bloodGroup}"></span>
+              <span class="badge badge-pending">PENDING TEST</span>
+            </div>
+            <div class="test-info">
+              <div>
+                <p>Donor</p>
+                <p th:text="${unit.donor != null ? unit.donor.name : 'Unknown'}">—</p>
+              </div>
+              <div>
+                <p>Collected</p>
+                <p th:text="${#temporals.format(unit.collectedAt,'dd MMM yyyy')}">—</p>
+              </div>
+              <div>
+                <p>Expiry Date</p>
+                <p th:text="${unit.expiryDate}">—</p>
+              </div>
+              <div>
+                <p>Blood Group</p>
+                <p th:text="${unit.bloodGroup}">—</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test actions -->
+          <div class="test-actions">
+            <!-- Mark Safe -->
+            <form method="post" th:action="@{/hematology/test/{id}/safe(id=${unit.bloodId})}"
+                  style="display:flex;gap:8px;align-items:flex-end;">
+              <div>
+                <label class="form-label" style="font-size:0.7rem;">Safe — Notes</label>
+                <input type="text" name="notes" class="form-control"
+                       placeholder="e.g. All markers normal" required style="width:220px;">
+              </div>
+              <button class="btn btn-safe" type="submit">✅ Mark SAFE</button>
+            </form>
+
+            <!-- Mark Unsafe -->
+            <form method="post" th:action="@{/hematology/test/{id}/unsafe(id=${unit.bloodId})}"
+                  style="display:flex;gap:8px;align-items:flex-end;">
+              <div>
+                <label class="form-label" style="font-size:0.7rem;">Unsafe — Reason</label>
+                <input type="text" name="notes" class="form-control"
+                       placeholder="e.g. HIV positive, discard" required style="width:220px;">
+              </div>
+              <button class="btn btn-danger" type="submit">❌ Mark UNSAFE</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

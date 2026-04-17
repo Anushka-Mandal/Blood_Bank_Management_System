@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — Hematology Dashboard</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: hematology-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar"><span class="topbar-title">Hematology Department</span></div>
+    <div class="page-body">
+      <div th:replace="~{fragments :: alerts}"></div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon warn">🧪</div>
+          <div>
+            <div class="stat-value" th:text="${pendingCount}">0</div>
+            <div class="stat-label">Units Awaiting Testing</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon navy">🔬</div>
+          <div>
+            <div class="stat-value" th:text="${allUnits.size()}">0</div>
+            <div class="stat-label">Total Units Processed</div>
+          </div>
+        </div>
+      </div>
+
+      <div th:if="${!pendingUnits.empty}" class="alert alert-warning">
+        🧪 <strong th:text="${pendingUnits.size()}"></strong> blood unit(s) are awaiting testing.
+        <a th:href="@{/hematology/test}" style="color:var(--warn);font-weight:600;margin-left:8px;">Go to Testing Queue →</a>
+      </div>
+
+      <!-- Pending test units -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <h3><span class="page-accent"></span>Pending Test Queue</h3>
+          <a th:href="@{/hematology/test}" class="btn btn-primary btn-sm">🧪 Go to Testing</a>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${pendingUnits.empty}" class="empty-state">
+            <div class="icon">✅</div><p>No units pending — testing queue is clear.</p>
+          </div>
+          <div th:unless="${pendingUnits.empty}" class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Unit ID</th><th>Blood Group</th><th>Donor</th><th>Collected</th><th>Expiry</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="unit : ${pendingUnits}">
+                  <td><span class="badge badge-navy" th:text="'#' + ${unit.bloodId}"></span></td>
+                  <td><span class="blood-group-badge" th:text="${unit.bloodGroup}"></span></td>
+                  <td th:text="${unit.donor != null ? unit.donor.name : '—'}">—</td>
+                  <td th:text="${#temporals.format(unit.collectedAt,'dd MMM yyyy')}">—</td>
+                  <td th:text="${unit.expiryDate}">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent results summary -->
+      <div class="card">
+        <div class="card-header"><h3><span class="page-accent"></span>Recently Tested</h3></div>
+        <div class="card-body" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Unit ID</th><th>Blood Group</th><th>Status</th><th>Tested By</th><th>Notes</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="unit : ${allUnits}" th:if="${unit.testStatus.name() != 'PENDING'}">
+                  <td><span class="badge badge-navy" th:text="'#' + ${unit.bloodId}"></span></td>
+                  <td><span class="blood-group-badge" th:text="${unit.bloodGroup}"></span></td>
+                  <td>
+                    <span class="badge"
+                          th:classappend="${unit.testStatus.name() == 'SAFE'} ? 'badge-safe' : 'badge-rejected'"
+                          th:text="${unit.testStatus}"></span>
+                  </td>
+                  <td th:text="${unit.testResult != null ? unit.testResult.testedBy : '—'}">—</td>
+                  <td style="font-size:0.82rem;color:var(--slate);" th:text="${unit.testResult != null ? unit.testResult.notes : '—'}">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

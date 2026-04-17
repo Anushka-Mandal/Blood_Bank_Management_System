@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — Admin Dashboard</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: admin-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar">
+      <span class="topbar-title">Administrator Dashboard</span>
+      <div class="topbar-user">
+        <div class="user-chip">
+          <div class="user-avatar">A</div>
+          <span>Admin</span>
+        </div>
+      </div>
+    </div>
+    <div class="page-body">
+      <div th:replace="~{fragments :: alerts}"></div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon crimson">📋</div>
+          <div>
+            <div class="stat-value" th:text="${pendingRequests.size()}">0</div>
+            <div class="stat-label">Requests Awaiting Approval</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon warn">🧪</div>
+          <div>
+            <div class="stat-value" th:text="${pendingTests}">0</div>
+            <div class="stat-label">Blood Units Pending Test</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon safe">✅</div>
+          <div>
+            <div class="stat-value" th:text="${safeUnits}">0</div>
+            <div class="stat-label">Safe Units Available</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon navy">📦</div>
+          <div>
+            <div class="stat-value" th:text="${inventory.size()}">0</div>
+            <div class="stat-label">Blood Group Stocks</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Urgent Requests Alert -->
+      <div th:if="${!urgentRequests.empty}" class="alert alert-error" style="margin-bottom:24px;">
+        ⚡ <strong th:text="${urgentRequests.size()}">0</strong> urgent/critical blood request(s) require immediate attention!
+        <a th:href="@{/admin/requests}" style="margin-left:8px;color:var(--crimson);font-weight:600;">View Now →</a>
+      </div>
+
+      <!-- Inventory Overview -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <h3><span class="page-accent"></span>Blood Inventory Overview</h3>
+          <a th:href="@{/admin/inventory}" class="btn btn-outline btn-sm">Manage Inventory</a>
+        </div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:16px;">
+            <div th:each="inv : ${inventory}"
+                 style="background:var(--mist);border-radius:10px;padding:16px;text-align:center;">
+              <div class="blood-group-badge" th:text="${inv.bloodGroup}" style="font-size:1rem;display:block;margin-bottom:8px;"></div>
+              <div style="font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--navy);"
+                   th:text="${inv.availableUnits}">0</div>
+              <div style="font-size:0.72rem;color:var(--slate);margin-top:4px;">units available</div>
+              <div class="inv-bar">
+                <div class="inv-bar-fill"
+                     th:classappend="${inv.stockLevel == 'ADEQUATE'} ? 'adequate' : (${inv.stockLevel == 'LOW'} ? 'low' : 'critical')"
+                     th:style="'width:' + ${inv.availableUnits > 30 ? 100 : (inv.availableUnits * 100 / 30)} + '%'"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending requests quick action -->
+      <div class="card">
+        <div class="card-header">
+          <h3><span class="page-accent"></span>Requests Awaiting Approval</h3>
+          <a th:href="@{/admin/requests}" class="btn btn-outline btn-sm">View All Requests</a>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${pendingRequests.empty}" class="empty-state">
+            <div class="icon">✅</div><p>No forwarded requests to review.</p>
+          </div>
+          <div th:unless="${pendingRequests.empty}" class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Recipient</th><th>Blood Group</th><th>Qty</th><th>Urgency</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="req : ${pendingRequests}">
+                  <td><span class="badge badge-navy" th:text="'#' + ${req.requestId}"></span></td>
+                  <td th:text="${req.recipient.name}">—</td>
+                  <td><span class="blood-group-badge" th:text="${req.bloodGroup}"></span></td>
+                  <td th:text="${req.quantity} + ' units'"></td>
+                  <td>
+                    <span class="badge"
+                          th:classappend="${req.urgency == 'CRITICAL'} ? 'badge-critical' : (${req.urgency == 'URGENT'} ? 'badge-urgent' : 'badge-navy')"
+                          th:text="${req.urgency}"></span>
+                  </td>
+                  <td style="display:flex;gap:8px;">
+                    <form method="post" th:action="@{/admin/requests/{id}/approve(id=${req.requestId})}">
+                      <button class="btn btn-safe btn-sm">✅ Approve</button>
+                    </form>
+                    <form method="post" th:action="@{/admin/requests/{id}/reject(id=${req.requestId})}">
+                      <input type="hidden" name="reason" value="Rejected by administrator.">
+                      <button class="btn btn-danger btn-sm">❌ Reject</button>
+                    </form>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

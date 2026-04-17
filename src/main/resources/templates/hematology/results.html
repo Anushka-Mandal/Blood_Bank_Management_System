@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — Test Results</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: hematology-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar"><span class="topbar-title">Test Results</span></div>
+    <div class="page-body">
+      <div class="card">
+        <div class="card-header">
+          <h3><span class="page-accent"></span>All Blood Unit Test Results</h3>
+          <a th:href="@{/hematology/test}" class="btn btn-primary btn-sm">🧪 Testing Queue</a>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${allUnits.empty}" class="empty-state">
+            <div class="icon">🔬</div><p>No blood units in the system yet.</p>
+          </div>
+          <div th:unless="${allUnits.empty}" class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Unit ID</th><th>Blood Group</th><th>Donor</th>
+                  <th>Collected</th><th>Expiry</th><th>Status</th>
+                  <th>Tested By</th><th>Test Notes</th><th>Available</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="unit : ${allUnits}">
+                  <td><span class="badge badge-navy" th:text="'#' + ${unit.bloodId}"></span></td>
+                  <td><span class="blood-group-badge" th:text="${unit.bloodGroup}"></span></td>
+                  <td th:text="${unit.donor != null ? unit.donor.name : '—'}">—</td>
+                  <td th:text="${#temporals.format(unit.collectedAt,'dd MMM yyyy')}">—</td>
+                  <td th:text="${unit.expiryDate}">—</td>
+                  <td>
+                    <span class="badge"
+                          th:classappend="${unit.testStatus.name() == 'SAFE'} ? 'badge-safe' : (${unit.testStatus.name() == 'UNSAFE'} ? 'badge-rejected' : 'badge-pending')"
+                          th:text="${unit.testStatus}"></span>
+                  </td>
+                  <td th:text="${unit.testResult != null ? unit.testResult.testedBy : '—'}">—</td>
+                  <td style="max-width:200px;font-size:0.82rem;color:var(--slate);"
+                      th:text="${unit.testResult != null ? unit.testResult.notes : 'Not yet tested'}">—</td>
+                  <td>
+                    <span class="badge" th:classappend="${unit.available} ? 'badge-approved' : 'badge-navy'"
+                          th:text="${unit.available ? 'YES' : 'NO'}"></span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

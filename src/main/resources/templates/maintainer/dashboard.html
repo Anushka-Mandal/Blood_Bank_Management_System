@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — Maintainer Dashboard</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: maintainer-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar"><span class="topbar-title">System Maintainer Dashboard</span></div>
+    <div class="page-body">
+      <div th:replace="~{fragments :: alerts}"></div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon warn">👤</div>
+          <div>
+            <div class="stat-value" th:text="${pendingUserCount}">0</div>
+            <div class="stat-label">Pending User Verifications</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon crimson">📋</div>
+          <div>
+            <div class="stat-value" th:text="${pendingRequestCount}">0</div>
+            <div class="stat-label">Requests to Forward</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Users -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <h3><span class="page-accent"></span>Pending User Verifications</h3>
+          <a th:href="@{/maintainer/users}" class="btn btn-outline btn-sm">View All</a>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${pendingUsers.empty}" class="empty-state">
+            <div class="icon">✅</div><p>No pending user verifications.</p>
+          </div>
+          <div th:unless="${pendingUsers.empty}" class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Name</th><th>Role</th><th>Blood Group</th><th>NID</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="user : ${pendingUsers}">
+                  <td th:text="${user.name}">—</td>
+                  <td><span class="badge badge-navy" th:text="${user.role}"></span></td>
+                  <td><span class="blood-group-badge" th:text="${user.bloodGroup}"></span></td>
+                  <td th:text="${user.nid}">—</td>
+                  <td style="display:flex;gap:8px;">
+                    <form method="post" th:action="@{/maintainer/users/{id}/approve(id=${user.userId})}">
+                      <button class="btn btn-safe btn-sm" type="submit">✅ Approve</button>
+                    </form>
+                    <form method="post" th:action="@{/maintainer/users/{id}/reject(id=${user.userId})}">
+                      <button class="btn btn-danger btn-sm" type="submit">❌ Reject</button>
+                    </form>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Requests -->
+      <div class="card">
+        <div class="card-header">
+          <h3><span class="page-accent"></span>Pending Blood Requests</h3>
+          <a th:href="@{/maintainer/requests}" class="btn btn-outline btn-sm">View All</a>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${pendingRequests.empty}" class="empty-state">
+            <div class="icon">📋</div><p>No pending requests to forward.</p>
+          </div>
+          <div th:unless="${pendingRequests.empty}" class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Recipient</th><th>Blood Group</th><th>Qty</th><th>Urgency</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="req : ${pendingRequests}">
+                  <td><span class="badge badge-navy" th:text="'#' + ${req.requestId}"></span></td>
+                  <td th:text="${req.recipient.name}">—</td>
+                  <td><span class="blood-group-badge" th:text="${req.bloodGroup}"></span></td>
+                  <td th:text="${req.quantity} + ' units'"></td>
+                  <td><span class="badge"
+                             th:classappend="${req.urgency == 'CRITICAL'} ? 'badge-critical' : 'badge-pending'"
+                             th:text="${req.urgency}"></span></td>
+                  <td>
+                    <form method="post" th:action="@{/maintainer/requests/{id}/forward(id=${req.requestId})}">
+                      <button class="btn btn-primary btn-sm" type="submit">📤 Forward</button>
+                    </form>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
