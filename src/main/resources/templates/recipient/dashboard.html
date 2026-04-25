@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — Recipient Dashboard</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: recipient-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar">
+      <span class="topbar-title">Recipient Dashboard</span>
+      <div class="topbar-user">
+        <div class="user-chip">
+          <div class="user-avatar" th:text="${#strings.substring(recipient.name,0,1)}">R</div>
+          <span th:text="${recipient.name}">Recipient</span>
+          <span class="blood-group-badge" th:text="${recipient.bloodGroup}">A+</span>
+        </div>
+      </div>
+    </div>
+    <div class="page-body">
+      <div th:replace="~{fragments :: alerts}"></div>
+
+      <div th:if="${recipient.accountStatus.name() == 'PENDING'}" class="alert alert-warning">
+        ⏳ Your account is pending approval. You cannot request blood until the System Maintainer approves your account.
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon crimson">📋</div>
+          <div>
+            <div class="stat-value" th:text="${requests.size()}">0</div>
+            <div class="stat-label">Total Requests</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon warn">⏳</div>
+          <div>
+            <div class="stat-value"
+                 th:text="${#lists.size(requests.?[status.name() == 'PENDING' or status.name() == 'FORWARDED'])}">0</div>
+            <div class="stat-label">In Progress</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon safe">✅</div>
+          <div>
+            <div class="stat-value"
+                 th:text="${#lists.size(requests.?[status.name() == 'FULFILLED'])}">0</div>
+            <div class="stat-label">Fulfilled</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon crimson">⚡</div>
+          <div>
+            <div class="stat-value" th:text="${urgentCount}">0</div>
+            <div class="stat-label">Urgent Requests</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header"><h3><span class="page-accent"></span>Quick Actions</h3></div>
+        <div class="card-body" style="display:flex;gap:12px;">
+          <a th:href="@{/recipient/request}" class="btn btn-primary">📝 New Blood Request</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3><span class="page-accent"></span>My Blood Requests</h3>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div th:if="${requests.empty}" class="empty-state">
+            <div class="icon">🏥</div>
+            <p>No blood requests yet. Use the button above to submit one.</p>
+          </div>
+          <div th:unless="${requests.empty}" class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Blood Group</th><th>Qty</th><th>Required By</th><th>Urgency</th><th>Status</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                <tr th:each="req : ${requests}">
+                  <td><span class="badge badge-navy" th:text="'#' + ${req.requestId}"></span></td>
+                  <td><span class="blood-group-badge" th:text="${req.bloodGroup}"></span></td>
+                  <td th:text="${req.quantity} + ' units'"></td>
+                  <td th:text="${req.requiredDate}"></td>
+                  <td>
+                    <span class="badge"
+                          th:classappend="${req.urgency == 'CRITICAL'} ? 'badge-critical' : (${req.urgency == 'URGENT'} ? 'badge-urgent' : 'badge-navy')"
+                          th:text="${req.urgency}"></span>
+                  </td>
+                  <td>
+                    <span class="badge"
+                          th:classappend="${req.status.name() == 'FULFILLED'} ? 'badge-approved' : (${req.status.name() == 'REJECTED'} ? 'badge-rejected' : 'badge-pending')"
+                          th:text="${req.status}"></span>
+                  </td>
+                  <td>
+                    <a th:href="@{/recipient/track/{id}(id=${req.requestId})}" class="btn btn-outline btn-sm">Track</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
