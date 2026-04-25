@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — Request Blood</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: recipient-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar"><span class="topbar-title">Request Blood</span></div>
+    <div class="page-body">
+      <div th:replace="~{fragments :: alerts}"></div>
+      <div style="max-width:560px;">
+        <div class="card">
+          <div class="card-header"><h3><span class="page-accent"></span>New Blood Request</h3></div>
+          <div class="card-body">
+            <form method="post" th:action="@{/recipient/request}">
+              <div class="form-group">
+                <label class="form-label">Blood Group Required</label>
+                <select name="bloodGroup" class="form-control" required>
+                  <option value="">— Select —</option>
+                  <option th:each="bg : ${bloodGroups}" th:value="${bg}" th:text="${bg}"></option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Quantity (units)</label>
+                <input type="number" name="quantity" class="form-control" min="1" max="10" placeholder="1–10 units" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Required By Date</label>
+                <input type="date" name="requiredDate" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Urgency Level</label>
+                <select name="urgency" class="form-control" required>
+                  <option value="NORMAL">Normal</option>
+                  <option value="URGENT">Urgent</option>
+                  <option value="CRITICAL">Critical (Emergency)</option>
+                </select>
+              </div>
+              <div style="display:flex;gap:12px;margin-top:8px;">
+                <button type="submit" class="btn btn-primary">Submit Request</button>
+                <a th:href="@{/recipient/dashboard}" class="btn btn-outline">Cancel</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

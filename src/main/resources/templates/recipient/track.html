@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>BBMS — Track Request</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments :: recipient-sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar"><span class="topbar-title">Track Request</span></div>
+    <div class="page-body">
+      <div style="max-width:600px;">
+        <!-- Request summary card -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-header">
+            <h3><span class="page-accent"></span>Request <span th:text="'#' + ${request.requestId}"></span></h3>
+            <span class="badge"
+                  th:classappend="${request.status.name() == 'FULFILLED'} ? 'badge-approved' : (${request.status.name() == 'REJECTED'} ? 'badge-rejected' : 'badge-pending')"
+                  th:text="${request.status}"></span>
+          </div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <p style="font-size:0.75rem;color:var(--slate);text-transform:uppercase;letter-spacing:.06em;">Blood Group</p>
+                <p style="font-weight:600;margin-top:4px;"><span class="blood-group-badge" th:text="${request.bloodGroup}"></span></p>
+              </div>
+              <div>
+                <p style="font-size:0.75rem;color:var(--slate);text-transform:uppercase;letter-spacing:.06em;">Quantity</p>
+                <p style="font-weight:600;margin-top:4px;" th:text="${request.quantity} + ' units'"></p>
+              </div>
+              <div>
+                <p style="font-size:0.75rem;color:var(--slate);text-transform:uppercase;letter-spacing:.06em;">Required By</p>
+                <p style="font-weight:600;margin-top:4px;" th:text="${request.requiredDate}"></p>
+              </div>
+              <div>
+                <p style="font-size:0.75rem;color:var(--slate);text-transform:uppercase;letter-spacing:.06em;">Urgency</p>
+                <p style="font-weight:600;margin-top:4px;">
+                  <span class="badge"
+                        th:classappend="${request.urgency == 'CRITICAL'} ? 'badge-critical' : (${request.urgency == 'URGENT'} ? 'badge-urgent' : 'badge-navy')"
+                        th:text="${request.urgency}"></span>
+                </p>
+              </div>
+            </div>
+            <div th:if="${request.adminNotes}" style="margin-top:16px;padding:12px;background:var(--mist);border-radius:8px;">
+              <p style="font-size:0.75rem;color:var(--slate);">Admin Notes:</p>
+              <p style="margin-top:4px;font-size:0.9rem;" th:text="${request.adminNotes}"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="card">
+          <div class="card-header"><h3><span class="page-accent"></span>Request Progress</h3></div>
+          <div class="card-body">
+            <ul class="timeline">
+              <li class="timeline-item done">
+                <p class="timeline-label">✅ Request Submitted</p>
+                <p class="timeline-sub" th:text="${#temporals.format(request.createdAt,'dd MMM yyyy, HH:mm')}">—</p>
+              </li>
+              <li class="timeline-item"
+                  th:classappend="${request.status.name() != 'PENDING'} ? 'done' : 'active'">
+                <p class="timeline-label">📤 Forwarded to Administrator</p>
+                <p class="timeline-sub" th:text="${request.status.name() == 'PENDING'} ? 'Awaiting System Maintainer review' : 'Forwarded for admin review'"></p>
+              </li>
+              <li class="timeline-item"
+                  th:classappend="${#lists.contains({'APPROVED','ALLOCATED','FULFILLED'}, request.status.name())} ? 'done' : (${request.status.name() == 'FORWARDED'} ? 'active' : '')">
+                <p class="timeline-label">🏥 Administrator Review</p>
+                <p class="timeline-sub" th:text="${#lists.contains({'APPROVED','ALLOCATED','FULFILLED'}, request.status.name())} ? 'Approved by administrator' : 'Awaiting admin decision'"></p>
+              </li>
+              <li class="timeline-item"
+                  th:classappend="${#lists.contains({'ALLOCATED','FULFILLED'}, request.status.name())} ? 'done' : (${request.status.name() == 'APPROVED'} ? 'active' : '')">
+                <p class="timeline-label">📦 Blood Allocated</p>
+                <p class="timeline-sub" th:text="${request.allocatedBloodUnit != null} ? 'Unit #' + ${request.allocatedBloodUnit.bloodId} + ' allocated' : 'Awaiting allocation'"></p>
+              </li>
+              <li class="timeline-item"
+                  th:classappend="${request.status.name() == 'FULFILLED'} ? 'done' : (${request.status.name() == 'ALLOCATED'} ? 'active' : '')">
+                <p class="timeline-label">🎉 Blood Delivered</p>
+                <p class="timeline-sub">Request fulfilled</p>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <a th:href="@{/recipient/dashboard}" class="btn btn-outline">← Back to Dashboard</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
